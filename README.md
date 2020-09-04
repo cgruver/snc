@@ -21,6 +21,27 @@ $ export KUBECONFIG=<directory_to_cloned_repo>/crc-tmp-install-data/auth/kubecon
 $ kubectl get pods --all-namespaces
 ```
 
+## Building SNC for OKD 4
+- Before running `./snc.sh`, you need to set some environment variables to override the default behavior.
+- Select the OKD 4 release that you want to build from: [https://origin-release.apps.ci.l2s4.p1.openshiftapps.com](https://origin-release.apps.ci.l2s4.p1.openshiftapps.com)
+- For example, to build release: 4.5.0-0.okd-2020-08-12-020541
+
+```bash
+export OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE="quay.io/openshift/okd:4.5.0-0.okd-2020-08-12-020541"
+export OPENSHIFT_VERSION=4.5.0-0.okd-2020-08-12-020541
+export MIRROR=https://github.com/openshift/okd/releases/download
+export OPENSHIFT_PULL_SECRET_PATH="/tmp/pull_secret.json"
+export BASE_OS=fedora-coreos
+
+# Create a fake pull secret
+
+cat << EOF > /tmp/pull_secret.json
+{"auths":{"fake":{"auth": "Zm9vOmJhcgo="}}}
+EOF
+
+./snc.sh
+```
+
 ## Troubleshooting
 
 OpenShift installer will create 2 VMs. It is sometimes useful to ssh inside the VMs.
