@@ -11,7 +11,7 @@ trap 'kill -9 $(jobs -p) || true' EXIT
 # If the user set OKD_VERSION in the environment, then use it to override OPENSHIFT_VERSION, MIRROR, and OPENSHIFT_INSTALL_RELEASE_IMAGE_OVERRIDE
 # Unless, those variables are explicitly set as well.
 OKD_VERSION=${OKD_VERSION:-none}
-if [[ "${OKD_VERSION}" != "none" ]]
+if [[ ${OKD_VERSION} != "none" ]]
 then
     OPENSHIFT_VERSION=${OKD_VERSION}
     MIRROR=${MIRROR:-https://github.com/openshift/okd/releases/download}

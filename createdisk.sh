@@ -12,7 +12,7 @@ DEVELOPER_USER_PASS='developer:$2y$05$paX6Xc9AiLa6VT7qr2VvB.Qi.GJsaqS80TR3Kb78FE
 # If the user set OKD_VERSION in the environment, then use it to override OPENSHIFT_VERSION, set BASE_OS, and set USE_LUKS
 # Unless, those variables are explicitly set as well.
 OKD_VERSION=${OKD_VERSION:-none}
-if [[ "${OKD_VERSION}" != "none" ]]
+if [[ ${OKD_VERSION} != "none" ]]
 then
     OPENSHIFT_VERSION=${OKD_VERSION}
     BASE_OS=fedora-coreos
@@ -71,7 +71,7 @@ add-drive $baseDir/$srcFile
 run
 EOF
 
-    if [[ ${USE_LUKS} == "true"]]
+    if [[ ${USE_LUKS} == "true" ]]
     then
         guestfish --remote <<EOF
 luks-open $partition coreos-root
