@@ -9,7 +9,17 @@ SSH="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i id_rsa_c
 SCP="scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i id_rsa_crc"
 OC=${OC:-oc}
 DEVELOPER_USER_PASS='developer:$2y$05$paX6Xc9AiLa6VT7qr2VvB.Qi.GJsaqS80TR3Kb78FEIlIL0YyBuyS'
+# If the user set OKD_VERSION in the environment, then use it to override OPENSHIFT_VERSION, set BASE_OS, and set USE_LUKS
+# Unless, those variables are explicitly set as well.
+OKD_VERSION=${OKD_VERSION:-none}
+if [[ "${OKD_VERSION}" != "none" ]]
+then
+    OPENSHIFT_VERSION=${OKD_VERSION}
+    BASE_OS=fedora-coreos
+    USE_LUKS=false
+fi
 BASE_OS=${BASE_OS:-rhcos}
+USE_LUKS=${USE_LUKS:-true}
 
 function get_dest_dir {
     if [ ${OPENSHIFT_VERSION} != "" ]; then
@@ -56,24 +66,22 @@ function sparsify {
             exit 1
     fi
 
-    if [[ ${BASE_OS} == "rhcos" ]]
+    guestfish --remote <<EOF
+add-drive $baseDir/$srcFile
+run
+EOF
+
+    if [[ ${USE_LUKS} == "true"]]
     then
         guestfish --remote <<EOF
-add-drive $baseDir/$srcFile
-run
 luks-open $partition coreos-root
 mount /dev/mapper/coreos-root /
-zero-free-space /boot/
 EOF
     else
-        guestfish --remote <<EOF
-add-drive $baseDir/$srcFile
-run
-mount $partition /
-zero-free-space /boot/
-EOF
+        guestfish --remote mount $partition /
     fi
-    
+
+    guestfish --remote zero-free-space /boot/
     if [ $? -ne 0 ]; then
             echo "Failed to sparsify $baseDir/$srcFile, aborting"
             exit 1
