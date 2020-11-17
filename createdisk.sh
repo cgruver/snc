@@ -344,18 +344,8 @@ ${SSH} core@api.${CRC_VM_NAME}.${BASE_DOMAIN} -- 'sudo crictl rmp $(sudo crictl 
 # Remove pull secret from the VM
 ${SSH} core@api.${CRC_VM_NAME}.${BASE_DOMAIN} -- 'sudo rm -f /var/lib/kubelet/config.json'
 
-# Download the hyperV daemons and libvarlink-util dependency on host
-mkdir $1/packages
-sudo yum install -y --downloadonly --downloaddir $1/packages hyperv-daemons libvarlink-util
-
-# SCP the downloaded rpms to VM
-${SCP} -r $1/packages core@api.${CRC_VM_NAME}.${BASE_DOMAIN}:/home/core/
-
 # Install the hyperV and libvarlink-util rpms to VM
-${SSH} core@api.${CRC_VM_NAME}.${BASE_DOMAIN} -- 'sudo rpm-ostree install /home/core/packages/*.rpm'
-
-# Remove the packages from VM
-${SSH} core@api.${CRC_VM_NAME}.${BASE_DOMAIN} -- rm -fr /home/core/packages
+${SSH} core@api.${CRC_VM_NAME}.${BASE_DOMAIN} -- 'sudo rpm-ostree install --allow-inactive hyperv-daemons libvarlink-util'
 
 # Adding Hyper-V vsock support
 ${SSH} core@api.${CRC_VM_NAME}.${BASE_DOMAIN} 'sudo bash -x -s' <<EOF
@@ -463,5 +453,5 @@ generate_hyperv_directory $libvirtDestDir $hypervDestDir
 
 tar cSf - --sort=name $hypervDestDir | xz --threads=0 >$hypervDestDir.$crcBundleSuffix
 
-# Cleanup up packages and vmlinux/initramfs files
-rm -fr $1/packages $1/vmlinuz* $1/initramfs*
+# Cleanup up and vmlinux/initramfs files
+rm -fr $1/vmlinuz* $1/initramfs*
